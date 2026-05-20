@@ -3,6 +3,7 @@ export type Ingredient = {
   name: string;
   lore: string;
   sprite: string;
+  quantity: number;
 };
 
 export type Recipe = {
@@ -35,8 +36,8 @@ export type BrewResult = {
 
 export type ServeResult = {
   outcome: "delighted" | "neutral" | "disappointed" | "confused";
-  reputation_delta: number;
-  new_reputation: number;
+  money_delta: number;
+  new_money: number;
   customer_response: string;
 };
 

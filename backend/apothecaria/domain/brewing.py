@@ -3,11 +3,18 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from apothecaria.db.models import Ingredient, Recipe
+from apothecaria.db.models import Ingredient, PlayerInventory, Recipe
 from apothecaria.domain.models import BrewResult
 
 
 def combine_ingredients(ingredient_slugs: list[str], session: Session) -> BrewResult:
+    """Match ingredient slugs against known recipes and return a brew result.
+
+    Use this when the player brews or serves a potion.
+    :param ingredient_slugs: slugs the player placed in the cauldron.
+    :param session: active SQLAlchemy session.
+    :return: brew result with match info and description.
+    """
     if not ingredient_slugs:
         return BrewResult(
             matched_recipe_slug=None,
@@ -35,6 +42,34 @@ def combine_ingredients(ingredient_slugs: list[str], session: Session) -> BrewRe
             ingredient_slugs=requested,
             description=f"The cauldron sputters at unknown ingredients: {sorted(unknown)}.",
         )
+
+    # Check player has enough of each ingredient
+    inventory_rows = {
+        pi.ingredient.slug: pi
+        for pi in session.scalars(
+            select(PlayerInventory).join(Ingredient).where(Ingredient.slug.in_(requested))
+        ).all()
+    }
+    insufficient = [
+        slug
+        for slug in requested_set
+        if slug not in inventory_rows or inventory_rows[slug].quantity < 1
+    ]
+    if insufficient:
+        names = sorted(insufficient)
+        return BrewResult(
+            matched_recipe_slug=None,
+            matched_recipe_name=None,
+            matched_ailment_category=None,
+            quality_score=0.0,
+            ingredient_slugs=requested,
+            description=f"Not enough ingredients: {names}. Visit the store to stock up!",
+        )
+
+    # Decrement quantities
+    for slug in requested_set:
+        inventory_rows[slug].quantity -= 1
+    session.flush()
 
     for recipe in session.scalars(select(Recipe)).all():
         recipe_slugs = {link.ingredient.slug for link in recipe.ingredient_links}
