@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import Counter
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -44,6 +46,7 @@ def combine_ingredients(ingredient_slugs: list[str], session: Session) -> BrewRe
         )
 
     # Check player has enough of each ingredient
+    slug_counts = Counter(requested)
     inventory_rows = {
         pi.ingredient.slug: pi
         for pi in session.scalars(
@@ -52,8 +55,8 @@ def combine_ingredients(ingredient_slugs: list[str], session: Session) -> BrewRe
     }
     insufficient = [
         slug
-        for slug in requested_set
-        if slug not in inventory_rows or inventory_rows[slug].quantity < 1
+        for slug, needed in slug_counts.items()
+        if slug not in inventory_rows or inventory_rows[slug].quantity < needed
     ]
     if insufficient:
         names = sorted(insufficient)
@@ -67,8 +70,8 @@ def combine_ingredients(ingredient_slugs: list[str], session: Session) -> BrewRe
         )
 
     # Decrement quantities
-    for slug in requested_set:
-        inventory_rows[slug].quantity -= 1
+    for slug, needed in slug_counts.items():
+        inventory_rows[slug].quantity -= needed
     session.flush()
 
     for recipe in session.scalars(select(Recipe)).all():
