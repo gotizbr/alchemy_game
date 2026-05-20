@@ -27,3 +27,10 @@ node_modules/
 dist/
 .vite/
 docs/
+
+# Secrets
+.env
+
+# Chainlit
+.chainlit/
+.files/
