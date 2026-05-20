@@ -1,4 +1,4 @@
-"""Chainlit chat UI for the chapter 12 shopping agent.
+"""Chainlit chat UI for the exercise 12 shopping agent.
 
 A thin shell around ``agent.run()``. Chainlit gives a browser chat with
 collapsible tool-call steps; the agent itself — model, persona, tools — lives in

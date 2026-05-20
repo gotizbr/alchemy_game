@@ -3,7 +3,7 @@
 A pydantic-ai agent — the apothecary's shopping apprentice — that browses the
 store and buys ingredients for the alchemist.
 
-Unlike the chapter 11 MCP server, this agent carries its own model, its own
+Unlike the exercise 11 MCP server, this agent carries its own model, its own
 persona, and its own reasoning loop. It is a complete program: call it with
 ``agent.run(goal)`` and it does the rest. The four tools are thin HTTP calls to
 the running Apothecaria backend — the same ``/api/store`` API the MCP server
@@ -29,7 +29,7 @@ MODEL_NAME = "openai/gpt-4o"
 _GITHUB_API_KEY = os.getenv("GITHUB_API_KEY")
 if not _GITHUB_API_KEY:
     raise RuntimeError(
-        "GITHUB_API_KEY is not set. The chapter 12 agent uses GitHub Models as "
+        "GITHUB_API_KEY is not set. The exercise 12 agent uses GitHub Models as "
         "its LLM — create a token and put it in .env. "
         "See workshop/12-pydantic-ai-agent.md."
     )
@@ -63,7 +63,7 @@ agent = Agent(
 )
 
 _BACKEND_DOWN = (
-    "The apothecary backend isn't reachable. Start it with `make backend-dev` " "and try again."
+    "The apothecary backend isn't reachable. Start it with `make backend-dev` and try again."
 )
 
 
@@ -88,7 +88,7 @@ async def list_store() -> str:
     if not items:
         return "The store has nothing for sale."
     lines = [
-        f"- {item['slug']} ({item['name']}): ${item['price']} each, " f"{item['stock']} in stock"
+        f"- {item['slug']} ({item['name']}): ${item['price']} each, {item['stock']} in stock"
         for item in items
     ]
     return "The apothecary store sells:\n" + "\n".join(lines)
